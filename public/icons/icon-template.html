@@ -1,0 +1,86 @@
+<!-- 아이콘 디자인 템플릿 -->
+<div class="icon-container">
+  <!-- 배경 -->
+  <div class="background"></div>
+  
+  <!-- 알약 모양 -->
+  <div class="pill-shape">
+    <div class="divider-line horizontal"></div>
+    <div class="divider-line vertical"></div>
+  </div>
+  
+  <!-- 색상 팔레트 -->
+  <div class="color-palette">
+    <span class="color white"></span>
+    <span class="color yellow"></span>
+    <span class="color orange"></span>
+    <span class="color pink"></span>
+    <span class="color red"></span>
+  </div>
+</div>
+
+<style>
+.icon-container {
+  width: 512px;
+  height: 512px;
+  background: #FFFFFF;
+  border-radius: 128px;
+  position: relative;
+  overflow: hidden;
+}
+
+.pill-shape {
+  width: 300px;
+  height: 200px;
+  background: #FFFFFF;
+  border: 8px solid #3880ff;
+  border-radius: 100px;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.divider-line {
+  background: #3880ff;
+  position: absolute;
+}
+
+.horizontal {
+  width: 80%;
+  height: 8px;
+  top: 50%;
+  left: 10%;
+  transform: translateY(-50%);
+}
+
+.vertical {
+  width: 8px;
+  height: 80%;
+  left: 50%;
+  top: 10%;
+  transform: translateX(-50%);
+}
+
+.color-palette {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 16px;
+}
+
+.color {
+  width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: 2px solid #3880ff;
+}
+
+.white { background: #FFFFFF; }
+.yellow { background: #FFD700; }
+.orange { background: #FFA500; }
+.pink { background: #FF69B4; }
+.red { background: #FF0000; }
+</style> 

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>스플래시 스크린 생성기</title>
+</head>
+<body>
+    <h1>스플래시 스크린 생성</h1>
+    <div id="status"></div>
+
+    <script>
+        // 스플래시 스크린 크기 정의
+        const splashSizes = [
+            { width: 1242, height: 2208, name: 'iPhone 6/7/8 Plus' },
+            { width: 1125, height: 2436, name: 'iPhone X/XS' },
+            { width: 1536, height: 2048, name: 'iPad Mini/Air' },
+            { width: 1668, height: 2224, name: 'iPad Pro 10.5"' },
+            { width: 2048, height: 2732, name: 'iPad Pro 12.9"' }
+        ];
+
+        async function generateSplashScreens() {
+            const status = document.getElementById('status');
+            
+            for (const size of splashSizes) {
+                status.innerHTML += `<p>생성 중: ${size.width}x${size.height} (${size.name})...</p>`;
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = size.width;
+                canvas.height = size.height;
+                const ctx = canvas.getContext('2d');
+
+                // 배경 색상
+                ctx.fillStyle = '#3880ff';
+                ctx.fillRect(0, 0, size.width, size.height);
+
+                // 중앙 아이콘 크기 계산
+                const iconSize = Math.min(size.width, size.height) * 0.3;
+                const x = (size.width - iconSize) / 2;
+                const y = (size.height - iconSize) / 2;
+
+                // 알약 모양 그리기
+                ctx.fillStyle = '#FFFFFF';
+                ctx.strokeStyle = '#FFFFFF';
+                ctx.lineWidth = iconSize * 0.05;
+
+                // 타원형 알약
+                ctx.beginPath();
+                ctx.ellipse(
+                    size.width/2,
+                    size.height/2,
+                    iconSize/2,
+                    iconSize/3,
+                    0,
+                    0,
+                    2 * Math.PI
+                );
+                ctx.fill();
+
+                // 분할선
+                ctx.beginPath();
+                ctx.moveTo(size.width/2 - iconSize/3, size.height/2);
+                ctx.lineTo(size.width/2 + iconSize/3, size.height/2);
+                ctx.moveTo(size.width/2, size.height/2 - iconSize/3);
+                ctx.lineTo(size.width/2, size.height/2 + iconSize/3);
+                ctx.stroke();
+
+                // 이미지 저장
+                const link = document.createElement('a');
+                link.download = `splash-${size.width}x${size.height}.png`;
+                link.href = canvas.toDataURL('image/png');
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+
+                // 진행 상태 표시
+                status.innerHTML += `<p>완료: ${size.width}x${size.height}</p>`;
+            }
+            
+            status.innerHTML += '<p>모든 스플래시 스크린 생성 완료!</p>';
+        }
+
+        // 페이지 로드 시 실행
+        window.onload = generateSplashScreens;
+    </script>
+</body>
+</html> 

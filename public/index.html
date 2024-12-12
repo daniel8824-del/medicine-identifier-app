@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>의약품 식별 시스템</title>
+    
+    <!-- PWA 메타 태그 -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3880ff">
+    
+    <!-- iOS 지원 -->
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-title" content="의약품식별">
+    <meta name="mobile-web-app-capable" content="yes">
+    
+    <!-- 아이콘 -->
+    <link rel="icon" type="image/png" sizes="72x72" href="icons/icon-72x72.png">
+    <link rel="icon" type="image/png" sizes="96x96" href="icons/icon-96x96.png">
+    <link rel="icon" type="image/png" sizes="128x128" href="icons/icon-128x128.png">
+    <link rel="icon" type="image/png" sizes="144x144" href="icons/icon-144x144.png">
+    <link rel="icon" type="image/png" sizes="152x152" href="icons/icon-152x152.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192x192.png">
+    <link rel="icon" type="image/png" sizes="384x384" href="icons/icon-384x384.png">
+    <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512x512.png">
+    
+    <!-- 스타일시트 -->
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>의약품 식별 시스템</h1>
+        </div>
+
+        <div class="tab-menu">
+            <button class="active">직접 검색</button>
+            <button>사진 검색</button>
+        </div>
+
+        <form class="search-form" onsubmit="handleSearch(event)">
+            <div class="form-group">
+                <label>제품명</label>
+                <input type="text" name="item_name" placeholder="제품명을 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label>업체명</label>
+                <input type="text" name="entp_name" placeholder="업체명을 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label>식별문자</label>
+                <input type="text" name="print" placeholder="식별문자를 입력하세요">
+            </div>
+
+            <div class="form-group">
+                <label>제형</label>
+                <div class="button-group">
+                    <input type="radio" name="form_code_name" id="form-type-all" value="전체" checked>
+                    <label for="form-type-all" class="btn-label">전체</label>
+                    
+                    <input type="radio" name="form_code_name" id="form-type-tablet" value="정제">
+                    <label for="form-type-tablet" class="btn-label">정제</label>
+                    
+                    <input type="radio" name="form_code_name" id="form-type-capsule" value="경질캡슐">
+                    <label for="form-type-capsule" class="btn-label">경질캡슐</label>
+                    
+                    <input type="radio" name="form_code_name" id="form-type-soft" value="연질캡슐">
+                    <label for="form-type-soft" class="btn-label">연질캡슐</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>모양</label>
+                <div class="button-group">
+                    <input type="radio" name="drug_shape" id="shape-all" value="전체" checked>
+                    <label for="shape-all" class="btn-label">전체</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-circle" value="원형">
+                    <label for="shape-circle" class="btn-label">원형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-rectangle" value="장방형">
+                    <label for="shape-rectangle" class="btn-label">장방형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-oval" value="타원형">
+                    <label for="shape-oval" class="btn-label">타원형</label>
+
+                    <input type="radio" name="drug_shape" id="shape-octagon" value="팔각형">
+                    <label for="shape-octagon" class="btn-label">팔각형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-pentagon" value="오각형">
+                    <label for="shape-pentagon" class="btn-label">오각형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-triangle" value="삼각형">
+                    <label for="shape-triangle" class="btn-label">삼각형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-square" value="사각형">
+                    <label for="shape-square" class="btn-label">사각형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-hexagon" value="육각형">
+                    <label for="shape-hexagon" class="btn-label">육각형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-diamond" value="마름모형">
+                    <label for="shape-diamond" class="btn-label">마름모형</label>
+                    
+                    <input type="radio" name="drug_shape" id="shape-other" value="기타">
+                    <label for="shape-other" class="btn-label">기타</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>색상</label>
+                <div class="color-grid">
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="하양" id="white">
+                        <label for="white">
+                            <div class="color-box color-white"></div>
+                            <span class="color-label">하양</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="노랑" id="yellow">
+                        <label for="yellow">
+                            <div class="color-box color-yellow"></div>
+                            <span class="color-label">노랑</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="주황" id="orange">
+                        <label for="orange">
+                            <div class="color-box color-orange"></div>
+                            <span class="color-label">주황</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="분홍" id="pink">
+                        <label for="pink">
+                            <div class="color-box color-pink"></div>
+                            <span class="color-label">분홍</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="빨강" id="red">
+                        <label for="red">
+                            <div class="color-box color-red"></div>
+                            <span class="color-label">빨강</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="갈색" id="brown">
+                        <label for="brown">
+                            <div class="color-box color-brown"></div>
+                            <span class="color-label">갈색</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="연두" id="green">
+                        <label for="green">
+                            <div class="color-box color-green"></div>
+                            <span class="color-label">연두</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="초록" id="darkgreen">
+                        <label for="darkgreen">
+                            <div class="color-box color-darkgreen"></div>
+                            <span class="color-label">초록</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="파랑" id="blue">
+                        <label for="blue">
+                            <div class="color-box color-blue"></div>
+                            <span class="color-label">파랑</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="남색" id="navy">
+                        <label for="navy">
+                            <div class="color-box color-navy"></div>
+                            <span class="color-label">남색</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="보라" id="purple">
+                        <label for="purple">
+                            <div class="color-box color-purple"></div>
+                            <span class="color-label">보라</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="회색" id="gray">
+                        <label for="gray">
+                            <div class="color-box color-gray"></div>
+                            <span class="color-label">회색</span>
+                        </label>
+                    </div>
+                    <div class="color-option">
+                        <input type="checkbox" name="color_class1" value="투명" id="transparent">
+                        <label for="transparent">
+                            <div class="color-box transparent-box"></div>
+                            <span class="color-label">투명</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>분할선</label>
+                <div class="button-group">
+                    <input type="radio" name="line_front" id="line-all" value="전체" checked>
+                    <label for="line-all" class="btn-label">전체</label>
+                    
+                    <input type="radio" name="line_front" id="line-none" value="없음">
+                    <label for="line-none" class="btn-label">없음</label>
+                    
+                    <input type="radio" name="line_front" id="line-plus" value="+형">
+                    <label for="line-plus" class="btn-label">+형</label>
+                    
+                    <input type="radio" name="line_front" id="line-minus" value="-형">
+                    <label for="line-minus" class="btn-label">-형</label>
+                    
+                    <input type="radio" name="line_front" id="line-other" value="기타">
+                    <label for="line-other" class="btn-label">기타</label>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="btn btn-search">검색</button>
+                <button type="reset" class="btn btn-reset">초기화</button>
+            </div>
+        </form>
+
+        <!-- 사진 검색 템플릿 -->
+        <template id="photo-search-template">
+            <div class="photo-search">
+                <div class="camera-buttons">
+                    <button type="button" class="btn camera-btn">
+                        <span>📸 사진 촬영</span>
+                    </button>
+                    <button type="button" class="btn upload-btn">
+                        <span>🖼️ 사진 업로드</span>
+                    </button>
+                </div>
+                
+                <input type="file" id="fileInput" accept="image/*" style="display: none;">
+                
+                <div id="cameraContainer" style="display: none;">
+                    <video id="videoElement" autoplay playsinline></video>
+                    <div class="camera-controls">
+                        <button id="captureBtn" class="btn">촬영</button>
+                        <button id="closeCameraBtn" class="btn">닫기</button>
+                    </div>
+                </div>
+                
+                <div id="previewContainer" class="preview-container"></div>
+                
+                <div class="action-buttons">
+                    <button type="button" id="photoSearchBtn" class="btn btn-search">검색</button>
+                    <button type="button" id="photoResetBtn" class="btn btn-reset">초기화</button>
+                </div>
+            </div>
+        </template>
+
+        <!-- 검색 결과 영역 -->
+        <div class="search-results"></div>
+    </div>
+
+    <script src="js/app.js"></script>
+
+    <style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f8f9fa;
+    }
+
+    .search-form {
+        width: 100%;
+        padding: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    }
+
+    .search-results {
+        width: 100%;
+        margin-top: 20px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        padding: 20px;
+    }
+
+    .medicine-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .medicine-item {
+        background: white;
+        border: 1px solid #e1e1e1;
+        border-radius: 8px;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .medicine-image {
+        width: 100%;
+        height: 200px;
+        object-fit: contain;
+        margin-bottom: 15px;
+    }
+
+    .medicine-info h3 {
+        margin: 0 0 10px 0;
+        font-size: 16px;
+        color: #333;
+    }
+
+    .medicine-info p {
+        margin: 5px 0;
+        font-size: 14px;
+        color: #666;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 20px;
+        padding: 20px 0;
+        border-top: 1px solid #e1e1e1;
+    }
+
+    .page-btn {
+        padding: 8px 16px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        background: white;
+        cursor: pointer;
+    }
+
+    .page-btn:disabled {
+        background: #f5f5f5;
+        cursor: not-allowed;
+    }
+
+    #page-info {
+        font-size: 14px;
+        color: #666;
+    }
+
+    .color-option {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        margin: 5px;
+    }
+
+    .color-box {
+        width: 40px;
+        height: 40px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin-bottom: 5px;
+    }
+
+    .color-label {
+        font-size: 14px;
+        color: #333;
+        text-align: center;
+        width: 100%;
+    }
+    </style>
+</body>
+</html>
