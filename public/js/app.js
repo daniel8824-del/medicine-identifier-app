@@ -7,13 +7,15 @@ let lastSearchParams = null;
 const API_BASE_URL = (() => {
     const hostname = window.location.hostname;
     if (hostname === 'localhost') {
-        return 'http://localhost:3000/api';  // 로컬 테스트용
+        return 'http://localhost:3000/';  // 로컬 테스트용
     } else if (hostname.includes('ngrok')) {
-        return '/api';  // ngrok 사용 시 상대 경로 사용
+        return '';  // ngrok 사용 시 상대 경로 사용
     } else if (hostname === '10.0.2.2') {
-        return 'http://10.0.2.2:3000/api';  // 안드로이드 에뮬레이터용
+        return 'http://10.0.2.2:3000/';  // 안드로이드 에뮬레이터용
+    } else if (hostname.includes('vercel.app')) {
+        return '';  // Vercel 배포 환경
     }
-    return '/api';  // 기타 환경에서는 상대 경로 사용
+    return '';  // 기타 환경에서는 상대 경로 사용
 })();
 
 // 제형 검색을 위한 매핑 객체
