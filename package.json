@@ -6,10 +6,10 @@
   "scripts": {
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
+    "build": "npm install",
     "test": "jest",
     "test:watch": "jest --watch",
-    "test:coverage": "jest --coverage",
-    "build": "npm install && npm run test"
+    "test:coverage": "jest --coverage"
   },
   "keywords": [],
   "author": "",
