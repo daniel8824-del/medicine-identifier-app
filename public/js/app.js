@@ -541,7 +541,7 @@ function setupPhotoSearch() {
             previewContainer.appendChild(cameraContainer);
         } catch (error) {
             console.error('카메라 접근 실패:', error);
-            alert('카메라 접근에 실패했습니다. 카메��� 권한을 확인해주세요.');
+            alert('카메라 접근에 실패했습니다. 카메라 권한을 확인해주세요.');
         }
     });
 
@@ -602,11 +602,14 @@ function setupPhotoSearch() {
             const result = await response.json();
             console.log('이미지 분석 결과:', result);
             
-            // 검색 결과 표시
-            if (result && result.results) {
-                displayImageSearchResults(result);
+            // 검색 결과 표시 (수정된 부분: medicines 배열 확인)
+            if (result && result.medicines && result.medicines.length > 0) {
+                displayImageSearchResults({
+                    results: result.medicines,
+                    currentPage: 1
+                });
             } else {
-                displayImageSearchResults({ results: [] });
+                displayImageSearchResults({ results: [], currentPage: 1 });
             }
         } catch (error) {
             console.error('이미지 검색 중 오류:', error);

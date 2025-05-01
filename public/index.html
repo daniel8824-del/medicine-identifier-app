@@ -35,6 +35,12 @@
             <h1>의약품 식별 시스템</h1>
         </div>
 
+        <div class="info-box">
+            <p><strong>💊 가장 정확한 검색 방법:</strong> 의약품에 각인된 <strong>식별문자</strong>로 검색하세요!</p>
+            <p>식별문자란 의약품의 앞면이나 뒷면에 인쇄되거나 새겨진 영문자, 숫자, 기호 등을 말합니다. (예: HW, CS, AUK, R1)</p>
+            <p>정확한 검색을 위해 식별문자를 정확히 입력해 주세요. 앞뒷면 모두 있다면 둘 다 입력하시면 더 정확합니다.</p>
+        </div>
+
         <div class="tab-menu">
             <button class="active">직접 검색</button>
             <button>사진 검색</button>
@@ -52,8 +58,8 @@
             </div>
 
             <div class="form-group">
-                <label>식별문자</label>
-                <input type="text" name="print" placeholder="식별문자를 입력하세요">
+                <label>식별문자 <span class="tip">(가장 정확한 검색 방법)</span></label>
+                <input type="text" name="print" placeholder="식별문자를 입력하세요 (예: HW, CS, AUK, R1)">
             </div>
 
             <div class="form-group">
@@ -237,6 +243,11 @@
         <!-- 사진 검색 템플릿 -->
         <template id="photo-search-template">
             <div class="photo-search">
+                <div class="info-box photo-info">
+                    <p><strong>📱 촬영 팁:</strong> 의약품의 <strong>식별문자</strong>가 잘 보이도록 밝은 곳에서 촬영하세요!</p>
+                    <p>식별문자는 의약품을 구별하는 가장 중요한 정보입니다. 앞뒷면을 모두 촬영하면 더 정확한 결과를 얻을 수 있습니다.</p>
+                </div>
+                
                 <div class="camera-buttons">
                     <button type="button" class="btn camera-btn">
                         <span>📸 사진 촬영</span>
@@ -277,6 +288,39 @@
         margin: 0 auto;
         padding: 20px;
         background-color: #f8f9fa;
+    }
+
+    .info-box {
+        background-color: #e8f4ff;
+        border: 1px solid #bbd8ff;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        line-height: 1.5;
+    }
+
+    .info-box p {
+        margin: 5px 0;
+    }
+
+    .info-box strong {
+        color: #0066cc;
+    }
+
+    .photo-info {
+        background-color: #fff4e6;
+        border-color: #ffd8a8;
+    }
+
+    .photo-info strong {
+        color: #e8590c;
+    }
+
+    .tip {
+        font-size: 12px;
+        color: #0066cc;
+        font-weight: normal;
     }
 
     .search-form {
