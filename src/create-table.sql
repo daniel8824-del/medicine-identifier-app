@@ -1,0 +1,58 @@
+-- 테이블 생성 (누락된 CHANGE_DATE 칼럼 추가)
+CREATE TABLE IF NOT EXISTS medicines (
+  "ITEM_SEQ" TEXT PRIMARY KEY,
+  "ITEM_NAME" TEXT,
+  "ENTP_NAME" TEXT,
+  "CHART" TEXT,
+  "PRINT_FRONT" TEXT,
+  "PRINT_BACK" TEXT,
+  "DRUG_SHAPE" TEXT,
+  "COLOR_CLASS1" TEXT,
+  "COLOR_CLASS2" TEXT,
+  "LINE_FRONT" TEXT,
+  "LINE_BACK" TEXT,
+  "LENG_LONG" TEXT,
+  "LENG_SHORT" TEXT,
+  "THICK" TEXT,
+  "CLASS_NAME" TEXT,
+  "ETC_OTC_NAME" TEXT,
+  "ITEM_PERMIT_DATE" TEXT,
+  "FORM_CODE_NAME" TEXT,
+  "MARK_CODE_FRONT_ANAL" TEXT,
+  "MARK_CODE_BACK_ANAL" TEXT,
+  "ITEM_IMAGE" TEXT,
+  "MARK_CODE_FRONT_IMG" TEXT,
+  "MARK_CODE_BACK_IMG" TEXT,
+  "ITEM_ENG_NAME" TEXT,
+  "EDI_CODE" TEXT,
+  "CHANGE_DATE" TEXT,
+  "ENTP_SEQ" TEXT,
+  "CLASS_NO" TEXT,
+  "IMG_REGIST_TS" TEXT,
+  "MARK_CODE_FRONT" TEXT,
+  "MARK_CODE_BACK" TEXT,
+  "last_updated" TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+-- 인덱스 생성 (대문자 칼럼명으로 변경)
+CREATE INDEX IF NOT EXISTS idx_item_name ON medicines("ITEM_NAME");
+CREATE INDEX IF NOT EXISTS idx_entp_name ON medicines("ENTP_NAME");
+CREATE INDEX IF NOT EXISTS idx_print_front ON medicines("PRINT_FRONT");
+CREATE INDEX IF NOT EXISTS idx_print_back ON medicines("PRINT_BACK");
+CREATE INDEX IF NOT EXISTS idx_drug_shape ON medicines("DRUG_SHAPE");
+CREATE INDEX IF NOT EXISTS idx_color_class1 ON medicines("COLOR_CLASS1");
+CREATE INDEX IF NOT EXISTS idx_color_class2 ON medicines("COLOR_CLASS2");
+
+-- 행 수준 보안(RLS) 활성화
+ALTER TABLE medicines ENABLE ROW LEVEL SECURITY;
+
+-- 모든 사용자에게 모든 권한을 허용하는 정책 생성
+CREATE POLICY "모든 사용자가 medicines 테이블에 접근 가능" 
+ON medicines FOR ALL 
+USING (true) 
+WITH CHECK (true);
+
+-- 익명 사용자에게도 권한 부여 (퍼블릭 액세스)
+GRANT ALL ON medicines TO anon;
+GRANT ALL ON medicines TO authenticated;
+GRANT ALL ON medicines TO service_role;

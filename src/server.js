@@ -12,8 +12,14 @@ console.log('Supabase Key 존재 여부:', !!process.env.SUPABASE_SECRET_KEY);
 const { createClient } = require('@supabase/supabase-js');
 
 const supabase = createClient(
-process.env.SUPABASE_URL,
-  process.env.SUPABASE_SECRET_KEY
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SECRET_KEY,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false
+    }
+  }
 );
    
 console.log('Supabase 연결 설정 완료');
@@ -60,55 +66,7 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
-
-// 정적 파일 제공 설정
-app.use(express.static(path.join(__dirname, '../public')));
-
-// API 라우트 설정
-const apiRouter = express.Router();
-app.use('/api', apiRouter);
-
-// API 엔드포인트들
-apiRouter.get('/search', async (req, res) => {
-    try {
-        const query = req.query.q;
-        if (!query) {
-            return res.status(400).json({ error: '검색어가 필요합니다.' });
-        }
-
-        const { data, error } = await supabase
-            .from('medicines')
-            .select('*');
-
-        if (error) throw error;
-
-        const results = searchMedicines(data, query);
-        res.json(results);
-    } catch (error) {
-        console.error('검색 중 오류 발생:', error);
-        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
-    }
-});
-
-apiRouter.post('/analyze-image', async (req, res) => {
-    try {
-        const imageData = req.body.image;
-        if (!imageData) {
-            return res.status(400).json({ error: '이미지 데이터가 필요합니다.' });
-        }
-
-        const result = await VisionService.analyzeImage(imageData);
-        res.json(result);
-    } catch (error) {
-        console.error('이미지 분석 중 오류 발생:', error);
-        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.' });
-    }
-});
-
-// 기본 라우트 - SPA를 위한 설정
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public/index.html'));
-});
+app.use(express.static('public'));
 
 // 요청 크기 제한 증가
 app.use(express.json({limit: '50mb'}));
@@ -867,188 +825,60 @@ app.get('/api/db-status', async (req, res) => {
     }
 });
 
-// 다중 조건으로 의약품 검색
-app.get('/api/search', async (req, res) => {
+// 검색 로직 개선
+app.post('/api/search', async (req, res) => {
     try {
-        const { 
-            item_name,        // 제품명 
-            entp_name,        // 업체명
-            print,            // 식별문자 (print_text에서 print로 변경)
-            drug_shape,        // 모양 (shape이 아닌 drug_shape으로 클라이언트가 전송)
-            color_class1,      // 색상
-            line_front,        // 앞면 분할선 (line이 아닌 line_front로 클라이언트가 전송)
-            line_back,         // 뒷면 분할선
-            form_code_name,    // 제형
-            page = 1, 
-            limit = 10 
-        } = req.query;
+        const searchCriteria = req.body;
+        console.log('검색 기준:', searchCriteria);
 
-        // 검색 쿼리 조건 추가 전 정보 로깅
-        console.log('검색 조건 세부정보:');
-        if (item_name) console.log('- 제품명:', item_name);
-        if (entp_name) console.log('- 업체명:', entp_name);
-        if (print) console.log('- 식별문자:', print);
-        if (drug_shape) console.log('- 모양:', drug_shape);
-        if (color_class1) console.log('- 색상:', color_class1);
-        if (line_front) console.log('- 앞면 분할선:', line_front);
-        if (line_back) console.log('- 뒷면 분할선:', line_back);
-        if (form_code_name) console.log('- 제형:', form_code_name);
-        
-        // 조건을 함수로 추출하여 재사용성 높이기
-        const applyFilters = (query) => {
-            if (item_name) {
-                query = query.ilike('ITEM_NAME', `%${item_name}%`);
-                console.log(`ITEM_NAME ILIKE '%${item_name}%' 조건 추가됨`);
-            }
-            
-            if (entp_name) {
-                query = query.ilike('ENTP_NAME', `%${entp_name}%`);
-                console.log(`ENTP_NAME ILIKE '%${entp_name}%' 조건 추가됨`);
-            }
-            
-            if (print) {
-                query = query.or(`PRINT_FRONT.ilike.%${print}%,PRINT_BACK.ilike.%${print}%`);
-                console.log(`PRINT_FRONT ILIKE '%${print}%' OR PRINT_BACK ILIKE '%${print}%' 조건 추가됨`);
-            }
-            
-            // drug_shape 파라미터 처리
-            if (drug_shape && drug_shape !== '전체') {
-                // 모양 검색 개선: 정확한 매칭과 부분 매칭 모두 처리
-                if (['원형', '타원형', '장방형', '삼각형', '사각형', '오각형', '육각형', '팔각형'].includes(drug_shape)) {
-                    // 정확한 모양 이름인 경우 정확히 매칭
-                    query = query.eq('DRUG_SHAPE', drug_shape);
-                    console.log(`DRUG_SHAPE = '${drug_shape}' 조건 추가됨`);
-    } else {
-                    // 그 외의 경우 부분 매칭 (이전과 동일)
-                    query = query.ilike('DRUG_SHAPE', `%${drug_shape}%`);
-                    console.log(`DRUG_SHAPE ILIKE '%${drug_shape}%' 조건 추가됨`);
-                }
-            }
-            
-            if (color_class1 && color_class1 !== '전체') {
-                query = query.or(`COLOR_CLASS1.ilike.%${color_class1}%,COLOR_CLASS2.ilike.%${color_class1}%`);
-                console.log(`COLOR_CLASS1 ILIKE '%${color_class1}%' OR COLOR_CLASS2 ILIKE '%${color_class1}%' 조건 추가됨`);
-            }
-            
-            // line_front와 line_back 파라미터 개별 처리 - 정확한 값 매핑 적용
-            if (line_front && line_front !== '전체') {
-                let lineValue = '';
-                
-                // 명확한 매핑 처리
-                if (line_front === '-형') lineValue = '-';
-                else if (line_front === '+형') lineValue = '+';
-                else if (line_front === '없음') lineValue = '';
-                else lineValue = line_front;
-                
-                // 빈 값은 특별히 처리 (NULL 또는 빈 문자열)
-                if (lineValue === '') {
-                    query = query.or('LINE_FRONT.is.null,LINE_FRONT.eq.');
-                    console.log(`LINE_FRONT IS NULL 또는 LINE_FRONT = '' 조건 추가됨`);
-                } else {
-                    query = query.eq('LINE_FRONT', lineValue);
-                    console.log(`LINE_FRONT = '${lineValue}' 조건 추가됨`);
-                }
-            }
-            
-            if (line_back && line_back !== '전체') {
-                let lineValue = '';
-                
-                // 명확한 매핑 처리
-                if (line_back === '-형') lineValue = '-';
-                else if (line_back === '+형') lineValue = '+';
-                else if (line_back === '없음') lineValue = '';
-                else lineValue = line_back;
-                
-                // 빈 값은 특별히 처리 (NULL 또는 빈 문자열)
-                if (lineValue === '') {
-                    query = query.or('LINE_BACK.is.null,LINE_BACK.eq.');
-                    console.log(`LINE_BACK IS NULL 또는 LINE_BACK = '' 조건 추가됨`);
-                } else {
-                    query = query.eq('LINE_BACK', lineValue);
-                    console.log(`LINE_BACK = '${lineValue}' 조건 추가됨`);
-                }
-            }
-            
-            if (form_code_name && form_code_name !== '전체') {
-                query = query.ilike('FORM_CODE_NAME', `%${form_code_name}%`);
-                console.log(`FORM_CODE_NAME ILIKE '%${form_code_name}%' 조건 추가됨`);
-            }
-            
-            return query;
-        };
-        
-        // 카운트 쿼리 - 별도로 생성
-        let countQuery = supabase.from('medicines').select('*', { count: 'exact', head: true });
-        countQuery = applyFilters(countQuery);
-        
-        const { count, error: countError } = await countQuery;
-        
-        if (countError) {
-            console.error('카운트 쿼리 오류:', countError);
-            res.setHeader('Content-Type', 'application/json');
-            return res.status(500).json({ error: '검색 중 오류가 발생했습니다.' });
+        let query = supabase
+            .from('medicines')
+            .select('*');
+
+        // 식별문자 검색 조건 추가
+        if (searchCriteria.식별문자_앞 || searchCriteria.식별문자_뒤) {
+            query = query.or(`PRINT_FRONT.ilike.%${searchCriteria.식별문자_앞 || ''}%,PRINT_BACK.ilike.%${searchCriteria.식별문자_뒤 || ''}%`);
         }
-        
-        console.log('검색 조건 적용 후 전체 결과 수:', count || 0);
-        
-        // 데이터 쿼리 - 별도로 생성하고 페이징 적용
-        let dataQuery = supabase.from('medicines').select('*');
-        dataQuery = applyFilters(dataQuery);
-        
-        // 페이징 및 정렬 적용
-        const pageNum = parseInt(page);
-        const limitNum = parseInt(limit);
-        const startIndex = (pageNum - 1) * limitNum;
-        
-        dataQuery = dataQuery
-            .order('ITEM_NAME', { ascending: true })
-            .range(startIndex, startIndex + limitNum - 1);
-        
-        // 쿼리 URL 디버깅
-        try {
-            console.log('최종 쿼리 URL:', dataQuery.url.toString());
-        } catch (e) {
-            console.log('URL 가져오기 실패:', e.message);
+
+        // 색상 검색 조건 추가
+        if (searchCriteria.색상_앞) {
+            query = query.ilike('COLOR_CLASS1', `%${searchCriteria.색상_앞}%`);
         }
-        
-        // 데이터 조회
-        const { data, error } = await dataQuery;
-        
+        if (searchCriteria.색상_뒤) {
+            query = query.ilike('COLOR_CLASS2', `%${searchCriteria.색상_뒤}%`);
+        }
+
+        // 모양 검색 조건 추가
+        if (searchCriteria.모양) {
+            query = query.ilike('DRUG_SHAPE', `%${searchCriteria.모양}%`);
+        }
+
+        const { data, error } = await query;
+
         if (error) {
-            console.error('검색 쿼리 오류:', error);
-            res.setHeader('Content-Type', 'application/json');
+            console.error('검색 오류:', error);
             return res.status(500).json({ error: '검색 중 오류가 발생했습니다.' });
         }
-        
-        const totalPages = Math.ceil((count || 0) / limitNum);
-        console.log(`검색 결과 ${data ? data.length : 0}개 반환 (페이지 ${pageNum}/${totalPages})`);
-        
-        if (data && data.length > 0) {
-            console.log('첫 번째 결과 샘플:', {
-                ITEM_NAME: data[0].ITEM_NAME,
-                DRUG_SHAPE: data[0].DRUG_SHAPE,
-                COLOR_CLASS1: data[0].COLOR_CLASS1,
-                COLOR_CLASS2: data[0].COLOR_CLASS2,
-                LINE_FRONT: data[0].LINE_FRONT,
-                LINE_BACK: data[0].LINE_BACK
-            });
+
+        if (!data || data.length === 0) {
+            return res.json({ items: [] });
         }
-        
-        // 응답 데이터 구성 - 클라이언트 코드와 일치하는 형식으로
-        res.setHeader('Content-Type', 'application/json');
-        res.json({
-            items: data || [],
-            pagination: {
-                currentPage: pageNum,
-                totalPages: totalPages,
-                limit: limitNum,
-                total: count || 0
-            }
-        });
+
+        // 결과 정렬 및 가공
+        const processedResults = data.map(item => ({
+            ...item,
+            similarity_score: calculateSimilarity(
+                searchCriteria.식별문자_앞,
+                searchCriteria.식별문자_뒤,
+                item.PRINT_FRONT,
+                item.PRINT_BACK
+            )
+        })).sort((a, b) => b.similarity_score - a.similarity_score);
+
+        res.json({ items: processedResults });
     } catch (error) {
-        console.error('통합 검색 API 오류:', error);
-        res.setHeader('Content-Type', 'application/json');
-        res.status(500).json({ error: '검색 중 오류가 발생했습니다.' });
+        console.error('검색 처리 중 오류:', error);
+        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
     }
 });
 
@@ -1120,7 +950,7 @@ app.post('/api/analyze-image', async (req, res) => {
 
         // 새로운 medicine-matcher 모듈을 사용하여 검색 수행
         const resultMedicines = await searchMedicines(analysisResult, DEFAULT_PARAMS);
-
+            
         // 매칭 그룹 정보 계산
         const matchGroups = {
             exactMatchCount: resultMedicines.filter(m => m.textSimilarityScore === 1).length,

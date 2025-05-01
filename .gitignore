@@ -128,25 +128,3 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
-
-# Test images
-src/test-images/
-
-# Backup files
-*copy.js
-*copy.*
-*-sqlite3.js
-
-# Database files
-*.sqlite
-*.sqlite3
-*.db
-
-# Data files
-src/medicines.csv
-src/create-table.sql
-
-# Temporary files
-src/check-db.js
-src/data-migrator.js
-src/export-data.js
