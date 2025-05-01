@@ -3,7 +3,10 @@
   "builds": [
     {
       "src": "src/server.js",
-      "use": "@vercel/node"
+      "use": "@vercel/node",
+      "config": {
+        "installCommand": "npm install --platform=linux --arch=x64 sharp"
+      }
     },
     {
       "src": "public/**",
