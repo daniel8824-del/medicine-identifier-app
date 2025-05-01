@@ -7,13 +7,13 @@ let lastSearchParams = null;
 const API_BASE_URL = (() => {
     const hostname = window.location.hostname;
     if (hostname === 'localhost') {
-        return 'http://localhost:3000';  // 로컬 테스트용
+        return 'http://localhost:3000/api';  // 로컬 테스트용
     } else if (hostname.includes('ngrok')) {
-        return '';  // ngrok 사용 시 상대 경로 사용
+        return '/api';  // ngrok 사용 시 상대 경로 사용
     } else if (hostname === '10.0.2.2') {
-        return 'http://10.0.2.2:3000';  // 안드로이드 에뮬레이터용
+        return 'http://10.0.2.2:3000/api';  // 안드로이드 에뮬레이터용
     }
-    return '';  // 기타 환경에서는 상대 경로 사용
+    return '/api';  // 기타 환경에서는 상대 경로 사용
 })();
 
 // 제형 검색을 위한 매핑 객체
@@ -285,70 +285,26 @@ function setupPaginationListeners() {
 
 // 검색 실행 함수
 async function performSearch(page = 1) {
-    const searchForm = document.querySelector('.search-form');
-    if (!searchForm) return;
-
-    const formData = new FormData(searchForm);
-    const params = new URLSearchParams();
-
-    // 검색 파라미터 설정
-    for (let [key, value] of formData.entries()) {
-        if (key === 'line_front') {
-            console.log('분할선 값:', value);
-            if (value && value !== '전체') {
-                params.append(key, value);
-            }
-        } else if (value && value !== '전체') {
-            if (key === 'form_code_name') {
-                const searchTerm = formCodeMapping[value];
-                if (searchTerm) {
-                    params.append('form_code_name', searchTerm);
-                } else {
-                    params.append(key, value);
-                }
-            } else if (key === 'color_class1') {
-                if (value === '') {
-                    params.append(key, '명');
-                } else {
-                    params.append(key, value);
-                }
-            } else {
-                params.append(key, value);
-            }
-        }
-    }
-    
-    // 디버깅을 위한 로그 추가
-    console.log('검색 URL:', `/api/search?${params}`);
-    console.log('검색 파라미터:', params.toString());
-
-    // 페이지 정보 추가
-    params.append('page', page);
-    params.append('limit', '9');
-
     try {
-        console.log('검색 요청 시작');
-        const response = await fetch(`/api/search?${params}`);
-        console.log('검색 응답 상태:', response.status);
+        const searchInput = document.getElementById('search-input');
+        const query = searchInput.value.trim();
+        
+        if (!query) {
+            displaySearchResults({ results: [], totalCount: 0 });
+            return;
+        }
+
+        const response = await fetch(`${API_BASE_URL}/search?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
         
         if (!response.ok) {
-            const errorText = await response.text();
-            console.error('검색 실패:', errorText);
-            throw new Error('검색 중 오류가 발생했습니다.');
+            throw new Error(data.error || '검색 중 오류가 발생했습니다.');
         }
-        
-        const data = await response.json();
-        console.log('검색 결과:', data);
-        
-        if (data.items) {
-            displaySearchResults(data.items, data.pagination);
-        } else {
-            console.log('검색 결과 없음');
-            displaySearchResults([], null);
-        }
+
+        displaySearchResults(data);
     } catch (error) {
-        console.error('검색 중 오류 발생:', error);
-        displaySearchResults([], null);
+        console.error('검색 오류:', error);
+        alert('검색 중 오류가 발생했습니다.');
     }
 }
 
@@ -585,32 +541,11 @@ function setupPhotoSearch() {
         }
 
         try {
-            const response = await fetch('/api/analyze-image', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    imageData: img.src
-                })
+            const result = await analyzeImage(img.src);
+            displayImageSearchResults({
+                results: result.medicines,
+                currentPage: 1
             });
-
-            if (!response.ok) {
-                throw new Error('이미지 분석에 실패했습니다.');
-            }
-
-            const result = await response.json();
-            console.log('이미지 분석 결과:', result);
-            
-            // 검색 결과 표시 (수정된 부분: medicines 배열 확인)
-            if (result && result.medicines && result.medicines.length > 0) {
-                displayImageSearchResults({
-                    results: result.medicines,
-                    currentPage: 1
-                });
-            } else {
-                displayImageSearchResults({ results: [], currentPage: 1 });
-            }
         } catch (error) {
             console.error('이미지 검색 중 오류:', error);
             alert('이미지 검색에 실패했습니다.');
@@ -892,4 +827,27 @@ function openModal(medicineData) {
     }, { passive: false });
 
     document.body.appendChild(modal);
+}
+
+// 이미지 분석 함수 수정
+async function analyzeImage(imageData) {
+    try {
+        const response = await fetch(`${API_BASE_URL}/analyze-image`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ image: imageData })
+        });
+
+        if (!response.ok) {
+            throw new Error('이미지 분석 중 오류가 발생했습니다.');
+        }
+
+        const result = await response.json();
+        return result;
+    } catch (error) {
+        console.error('이미지 분석 오류:', error);
+        throw error;
+    }
 }

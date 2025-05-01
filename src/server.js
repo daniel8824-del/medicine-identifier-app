@@ -60,7 +60,55 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json({limit: '50mb'}));
 app.use(express.urlencoded({limit: '50mb', extended: true}));
-app.use(express.static('public'));
+
+// 정적 파일 제공 설정
+app.use(express.static(path.join(__dirname, '../public')));
+
+// API 라우트 설정
+const apiRouter = express.Router();
+app.use('/api', apiRouter);
+
+// API 엔드포인트들
+apiRouter.get('/search', async (req, res) => {
+    try {
+        const query = req.query.q;
+        if (!query) {
+            return res.status(400).json({ error: '검색어가 필요합니다.' });
+        }
+
+        const { data, error } = await supabase
+            .from('medicines')
+            .select('*');
+
+        if (error) throw error;
+
+        const results = searchMedicines(data, query);
+        res.json(results);
+    } catch (error) {
+        console.error('검색 중 오류 발생:', error);
+        res.status(500).json({ error: '서버 오류가 발생했습니다.' });
+    }
+});
+
+apiRouter.post('/analyze-image', async (req, res) => {
+    try {
+        const imageData = req.body.image;
+        if (!imageData) {
+            return res.status(400).json({ error: '이미지 데이터가 필요합니다.' });
+        }
+
+        const result = await VisionService.analyzeImage(imageData);
+        res.json(result);
+    } catch (error) {
+        console.error('이미지 분석 중 오류 발생:', error);
+        res.status(500).json({ error: '이미지 분석 중 오류가 발생했습니다.' });
+    }
+});
+
+// 기본 라우트 - SPA를 위한 설정
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../public/index.html'));
+});
 
 // 요청 크기 제한 증가
 app.use(express.json({limit: '50mb'}));
