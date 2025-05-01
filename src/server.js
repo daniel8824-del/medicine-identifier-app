@@ -1102,7 +1102,7 @@ app.listen(port, () => {
 });
 
 // collectAndSaveData 함수 내보내기
-module.exports = { collectAndSaveData };
+module.exports = app;
 
 // 레벤슈타인 거리 계산 함수 추가
 function levenshteinDistance(a, b) {
